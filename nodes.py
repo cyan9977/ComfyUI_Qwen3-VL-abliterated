@@ -13,6 +13,19 @@ from pathlib import Path
 
 
 class Qwen3_VQA:
+    # Model mapping: display_name -> (huggingface_repo_id, local_folder_name)
+    MODEL_MAPPING = {
+        "Qwen3-VL-4B-Instruct-FP8": ("qwen/Qwen3-VL-4B-Instruct-FP8", "Qwen3-VL-4B-Instruct-FP8"),
+        "Qwen3-VL-4B-Thinking-FP8": ("qwen/Qwen3-VL-4B-Thinking-FP8", "Qwen3-VL-4B-Thinking-FP8"),
+        "Qwen3-VL-8B-Instruct-FP8": ("qwen/Qwen3-VL-8B-Instruct-FP8", "Qwen3-VL-8B-Instruct-FP8"),
+        "Qwen3-VL-8B-Thinking-FP8": ("qwen/Qwen3-VL-8B-Thinking-FP8", "Qwen3-VL-8B-Thinking-FP8"),
+        "Qwen3-VL-4B-Instruct": ("qwen/Qwen3-VL-4B-Instruct", "Qwen3-VL-4B-Instruct"),
+        "Qwen3-VL-4B-Thinking": ("qwen/Qwen3-VL-4B-Thinking", "Qwen3-VL-4B-Thinking"),
+        "Qwen3-VL-8B-Instruct": ("qwen/Qwen3-VL-8B-Instruct", "Qwen3-VL-8B-Instruct"),
+        "Qwen3-VL-8B-Thinking": ("qwen/Qwen3-VL-8B-Thinking", "Qwen3-VL-8B-Thinking"),
+        "Qwen3-VL-4B-Instruct-abliterated": ("huihui-ai/Huihui-Qwen3-VL-4B-Instruct-abliterated", "Qwen3-VL-4B-Instruct-abliterated"),
+    }
+
     def __init__(self):
         self.model_checkpoint = None
         self.processor = None
@@ -40,6 +53,7 @@ class Qwen3_VQA:
                         "Qwen3-VL-4B-Thinking",
                         "Qwen3-VL-8B-Instruct",
                         "Qwen3-VL-8B-Thinking",
+                        "Qwen3-VL-4B-Instruct-abliterated",
                     ],
                     {"default": "Qwen3-VL-4B-Instruct-FP8"},
                 ),
@@ -107,9 +121,17 @@ class Qwen3_VQA:
     ):
         if seed != -1:
             torch.manual_seed(seed)
-        model_id = f"qwen/{model}"
+        
+        # Get model repository ID and local folder name from mapping
+        if model in self.MODEL_MAPPING:
+            model_id, local_folder_name = self.MODEL_MAPPING[model]
+        else:
+            # Fallback for backward compatibility
+            model_id = f"qwen/{model}"
+            local_folder_name = os.path.basename(model_id)
+        
         self.model_checkpoint = os.path.join(
-            folder_paths.models_dir, "prompt_generator", os.path.basename(model_id)
+            folder_paths.models_dir, "prompt_generator", local_folder_name
         )
 
         if not os.path.exists(self.model_checkpoint):
